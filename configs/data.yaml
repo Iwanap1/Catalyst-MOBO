@@ -1,0 +1,44 @@
+# Data pipeline settings for the YohannesCombined2023 TMN dataset.
+# Paths are relative to the repository root.
+
+paths:
+  data_dir: data/YohannesCombined2023
+  clean_dir: data/YohannesCombined2023/clean_slabs
+  structure_dir: data/YohannesCombined2023/structures
+  unrelaxed_dir: data/YohannesCombined2023/unrelaxed_slabs  # as-cut slabs rebuilt from MP bulk (src/reconstruct.py)
+  bulk_dir: data/YohannesCombined2023/bulk                  # MP bulk structures (JSON cache)
+
+filters:
+  # The paper trains its ML models on |dE| <= 5 eV and treats the rest as unphysical.
+  max_abs_energy: 5.0
+  # Drop calculations whose adsorbate ended up unbound. Mostly endothermic, but desorbed CO is physisorbed at
+  # ~-0.16 eV and is the lowest-energy state on some slabs; dropping removes 19 slab/adsorbate groups entirely.
+  drop_desorbed: true
+  # "Clean" slabs that actually contain adsorbate atoms; their reactions use a wrong reference.
+  contaminated_slabs:
+    - 4f7babcb012a292179cd0f3ac37b2c9e  # W2N3-mp-1216242-D (100), contains CO
+
+sites:
+  # Slab the sites are enumerated and featurised on. "unrelaxed" = ideal bulk cut, which is all that is
+  # available for an unseen catalyst before any DFT; "relaxed" = the dataset's relaxed clean slab.
+  slab_source: unrelaxed
+  surface_depth: 0.9    # Å; atoms this close to the top layer are surface atoms (pymatgen default)
+  site_height: 2.0      # Å above the surface at which sites are placed
+  symprec: 0.1          # Å; slab symmetry tolerance used to reduce sites
+  equivalence_tol: 0.3  # Å; distance under which a symmetry image counts as the same site
+  neighbour_mult: 1.15  # multiplier on covalent radii for bonded neighbours (SNN search)
+
+mapping:
+  migrated_threshold: 1.0  # Å; in-plane distance from nearest enumerated site beyond which a calc is "migrated"
+  bond_slack: 0.35         # Å added to covalent radius sum when deciding if the adsorbate is bound
+
+# Free-energy corrections dG = dE + (ZPE + int Cp dT - T dS), per adsorbate, in eV.
+# Values come from the paper's SI / Peterson et al. (2010); not yet available, so 0 = use dE.
+free_energy_corrections:
+  CO: 0.0
+  CHO: 0.0
+  OH: 0.0
+  H: 0.0
+
+objectives:
+  co_window: [-1.0, 0.0]  # paper's activity window on dG_CO (eV)

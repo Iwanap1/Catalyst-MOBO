@@ -1,0 +1,6 @@
+1. Download all the reaction data from CatHub
+2. Reproduce unrelaxed slabs using materials project bulk structures and specified terminations. 
+    - repeat cell until at least 4.5 A in both X and Y directions
+    - check agreement with bare slabs from CatHub
+    - identify sites with Pymatgen Delauney triangulation. Match reaction sites on CatHub to these sites.
+3. 
